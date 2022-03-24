@@ -95,31 +95,32 @@ select *     #查询命令from      ,"/>
 <p>字符型表现为id&#x3D;1’</p>
 <p>可通过修改对应的id值：正常数字，字符，反斜杠 来判断是否存在注入点</p>
 <p>通过网页对我们操作的报错可以进行解读</p>
-<p>如<img src="https://cloud.xhserver.top/img/40" alt="报错1"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
+<p>如</p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/sqli/%E6%8A%A5%E9%94%991.png" alt="panduan"></p>
 <p>我们输入？id&#x3D;1‘</p>
 <p>报错为 ’‘1’‘ limit 0.1 ’</p>
 <p>将两边的‘’去除，则我们能发现  ‘1’‘ limit  说明我们的id是被’‘包围的，说明我们的id是字符串类型的，</p>
-<p>再有<img src="https://cloud.xhserver.top/img/43" alt="报错2"></p>
+<p>再有</p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/sqli/%E6%8A%A5%E9%94%992.png" alt="panduan"></p>
 <p>此时出现’‘1’‘）limit 0.1’ </p>
 <p>我们继续分解 ‘1’‘） limit </p>
 <p>我们输入的id是1’那么我们的id是字符串型的且，需要一个）来注释掉前面的（，从而继续执行操作</p>
 <p>至于查询操作我们先从库名到表名到表里的内容一次进行</p>
 <p>这次我们使用union来进行操作</p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/ku.png" alt="ku"></p>
 <p>先查询库名  这个比较简单  ?id&#x3D;-1 union select 1,2, database() –+</p>
 <p>能够得知我们的库名是security </p>
 <p>我们拿到了库名就可以进行下一步操作，去看看库里有哪些表</p>
 <p>?id&#x3D;-1 union select 1,2, group_concat(table_name) from information_schema.tables where table_schema&#x3D;’security’ –+</p>
-<p><img src="https://cloud.xhserver.top/img/44" alt="报错3"></p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/table2.png" alt="table2"></p>
 <p>从而得知库里的表有这几个，我们需要密码的和id那么我们进入user里面寻找</p>
 <p>?id&#x3D;-1 union select 1,2, group_concat(column.name)from information_schema.columns  where table_name&#x3D;’users’ –+</p>
-<p><img src="https://cloud.xhserver.top/img/45" alt="报错4"></p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/table.png" alt="table"></p>
 <p>如此，我们知道列表里有三种，最后直接查询密码即可</p>
 <p>?id&#x3D;-1 union select 1,2, group_concat(password) from security.users –+</p>
-<p><img src="https://cloud.xhserver.top/img/41" alt="结果"></p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/password.png" alt="password"></p>
 <p>第三题看上文中对于报错的理解就可得知缺少） 所以在id&#x3D;1’) 基础上与第二题相差无几</p>
-<p><img src="https://cloud.xhserver.top/img/42" alt="结果2"></p>
+<p><img src="https://raw.githubusercontent.com/TJ-deng/zhaopian.img/main/sqli/%E6%9F%A5%E8%AF%A2%E7%BB%93%E6%9E%9C3.png" alt="jieguo3"></p>
 <p>以上就是目前已经学习到的知识</p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
