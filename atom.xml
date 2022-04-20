@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2022-04-01T03:41:41.219Z</updated>
+  <updated>2022-04-20T09:42:34.815Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title></title>
+    <link href="http://example.com/2022/04/20/xss/"/>
+    <id>http://example.com/2022/04/20/xss/</id>
+    <published>2022-04-20T02:47:49.933Z</published>
+    <updated>2022-04-20T09:42:34.815Z</updated>
+    
+    <content type="html"><![CDATA[<p>在经历了xss漏洞学习后，在靶场进行了自我的学习，从1-12关，xss的漏洞按照网上的教程很好做，但在学习中发现，xss的漏洞并不是那么容易的发现，还是需要在多次训练后才能慢慢掌握诀窍，目前仍旧是照葫芦画瓢的阶段，希望在学习中能够慢慢发现诀窍和形成不一样的思维。</p><h2 id="less1"><a href="#less1" class="headerlink" title="less1"></a>less1</h2><p>1.点击图片完成get请求，提交name变量test，完整的显示在返回的页面源代码中。</p><p>2.get请求的name变量放入xss poc，完整返回在html中，浏览器响应xss poc。</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419183239216"></p><p>3.后台代码分析，通过$_GET[“name”]，获取name的值，没有过滤通过echo直接进行了输出</p><h2 id="less-2"><a href="#less-2" class="headerlink" title="less 2"></a>less 2</h2><p>1.利用name参数提交poc，查看返回的html代码，需要构造闭合</p><p>2.构造闭合，浏览器响应poc。</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419182514583"></p><p>3.后台源代码分析</p><p>获取浏览器提交的keyword值，未进行过滤，输出在<input name=keyword value="'.$str.'">。</p><p>如果是keyword提交的是<script>alert(xss)</script>,返回的就会是<input name=keyword value="<script>alert(1)</script>">,javascript引擎并不会执行<script>,所以需要构造闭合。</p><p>keyword提交test"><script>alert(1)</script>&#x2F;&#x2F;,php处理后返回的html就会是<input name=keyword value="test"> <script>alert(1)</script>&#x2F;&#x2F;“&gt;，&#x2F;&#x2F;是注释的作用，javascript引擎执行<script>alert(1)</script></p><h2 id="less-3"><a href="#less-3" class="headerlink" title="less 3"></a>less 3</h2><p>1.keyword提交”test&gt;<script>alert(1)</script>&#x2F;&#x2F;构造闭合进行注入，根据返回的html代码，后台对尖括号进行了过滤</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419183538140"></p><p>2.构造标签事件进行过滤，返回值实在input标签中，尝试构造onclick事件触发xss。点击输入框后，触发onclick事件，响应onclick中的javascript代码。</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419183826227"></p><p>3.构造事件onmouseover，事件成功执行javascript:伪协议。</p><p>4.后台源代码分析，采用htmlspecialchars函数对获取keyword变量进行过滤，输出在input标签的value中。htmlspecichars对尖括号进行了过滤。</p><h2 id="less-4"><a href="#less-4" class="headerlink" title="less 4"></a>less 4</h2><p>1.keyword提交<script>poc,根据后台返回的源代码，后台针对尖括号进行了过滤</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419184306465"></p><p>2.构造事件onmouseover，构造语句闭合，成功执行javascript语句</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419184427089"></p><p>3.后台源代码分析。对get请求的keyword变量，过滤掉尖括号，采用htmlspecialchars过滤后用echo直接输出在返回的html中。</p><h2 id="less-5"><a href="#less-5" class="headerlink" title="less 5"></a>less 5</h2><p>1.构造事件 “ oninput='alert(1)'，返回的html代码对on进行了过滤。尝试大小写，依然进行了过滤。尝试编码，不识别。<img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419184651628"></p><p> 2.尝试POC test"><script>alert</script>&#x2F;&#x2F;,根据返回的html，后台对script进行了过滤，但是并未对尖括号进行过滤。</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419184740304"></p><p>3.利用没有过滤尖括号，构造a标签再尝试利用a标签的href属性执行javascript:伪协议，”&gt;<a href='javascript:alert(1)'>,没有对javascript进行过滤，触发xss</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419185244536"></p><p>4.后台源代码分析，对get提交的keyword变量，script替换成scr_ipt,on替换成o_n，htmlspecialchars函数过滤后，输出在html中</p><h2 id="less-6"><a href="#less-6" class="headerlink" title="less 6"></a>less 6</h2><p>1.经测试替换了script，on，没有过滤&lt;&gt;。构造a标签，利用href属性支持javascript:伪协议构造poc，后台对href关键字进行替换，尝试采用大小写混写进行了绕过。</p><p><img src="https://s3.bmp.ovh/imgs/2022/04/19/e2aef2ef20791176.png" alt="image-20220419190016436"></p><p>2.后台源代码分析。对get提交的keyword变量，替换&lt;script 、on、src、data、href关键字，采用htmlspecialchars过滤后输出在html中</p><h2 id="Less7"><a href="#Less7" class="headerlink" title="Less7"></a>Less7</h2><p>首先尝试输入&lt;&gt;alert(1)&lt;&gt;</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss2/less7.1.png"></p><p>发现被屏蔽</p><p>之后尝试双写，过关</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss2/less7.png"></p><h2 id="Less8"><a href="#Less8" class="headerlink" title="Less8"></a>Less8</h2><p>通过源代码发现输入的值会被传入herf，点击友情链接会执行被带入的参数</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss2/less8.1.png"></p><p>利用这点进行注入，javascript:alert()，发现被过滤，大小写绕过也不行，尝试html实体注入</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss2/less8.png"></p><h2 id="less-9"><a href="#less-9" class="headerlink" title="less 9"></a>less 9</h2><p>1.采用第八关的poc，发现poc中应包含合法的url，poc中添加&#x2F;&#x2F;http://www.baidu.com,发现可以进行绕过</p><p><img src="https://raw.githubusercontent.com/piaorz/pictures/main/XSS/%E7%AC%AC9%E5%85%B3/1.png"></p><p><img src="https://raw.githubusercontent.com/piaorz/pictures/main/XSS/%E7%AC%AC9%E5%85%B3/2.png"></p><p>2.后台源代码分析。get提交的keyword变量，替换关键字script、on、src、data、href、”，判断该变量有无http:&#x2F;&#x2F;</p><h2 id="less-10"><a href="#less-10" class="headerlink" title="less 10"></a>less 10</h2><p>1.对keyword提交poc，根据返回的源代码，过滤了尖括号，尝试编码不能绕过，无法构造事件触发xss、无法利用属性的javascript协议、无法利用css注入。</p><p><img src="https://raw.githubusercontent.com/piaorz/pictures/main/XSS/%E7%AC%AC10%E5%85%B3/1.png"></p><p> 2.详细查看源代码，可能有隐藏的表单，尝试提交t_link、t_history、t_sort变量，t_sort变量返回在了html的value中，尝试进行了绕过。构造poc：”type&#x3D;”text” onclick&#x3D;”alert(1)”，web浏览器成功执行 。ps:type&#x3D;”text”为构造一个文本框，用来触发onclick事件</p><p><img src="https://raw.githubusercontent.com/piaorz/pictures/main/XSS/%E7%AC%AC10%E5%85%B3/2.png"></p><p> 3.后台源代码分析，获取了get请求的keyword变量、t_sort变量，t_sort变量过滤掉了尖括号，输出在value属性中</p><h2 id="less-11"><a href="#less-11" class="headerlink" title="less 11"></a>less 11</h2><p>刚开始进来就已经发现相比于上一个关卡，又多了一个ref参数，</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss/xss-11-1.png"></p><p>在对于sql注入的学习中，我们已经知道，reffer参数注入或者cookies注入这一类的，于是大胆猜测这次在reffer处进行xss注入，打开hackbar，添加了reffer的选项后，添加语句</p><p>“ type&#x3D;”text” onclick&#x3D;” alert(‘xss’)</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss/xss-11-2.png"></p><p>确定后，点击框处，结束本题</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss/xss-11-3.png"></p><h2 id="less-12"><a href="#less-12" class="headerlink" title="less 12"></a>less 12</h2><p>第十二题一开始进入后先是查看源代码，发现11题的ref换成了ua，</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss/xss-12-1.png"></p><p>ua在这种地方，联想以前的useragent注入，现在这个ua大概率就是useragent，操作相较于第十一题没什么新鲜感，依旧是将之前放到ref的地方换成useragent，如图所示</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss/xss-12-2.png"></p><p>依旧是点击框处，结束本题</p><p><img src="https://raw.githubusercontent.com/TJ-deng/helloworld/master/xss/xss-12-3.png"></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;在经历了xss漏洞学习后，在靶场进行了自我的学习，从1-12关，xss的漏洞按照网上的教程很好做，但在学习中发现，xss的漏洞并不是那么容易的发现，还是需要在多次训练后才能慢慢掌握诀窍，目前仍旧是照葫芦画瓢的阶段，希望在学习中能够慢慢发现诀窍和形成不一样的思维。&lt;/p&gt;
+&lt;</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title></title>
